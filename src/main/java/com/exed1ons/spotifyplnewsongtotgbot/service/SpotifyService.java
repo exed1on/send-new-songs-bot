@@ -134,46 +134,51 @@ public class SpotifyService {
     }
 
     public List<Song> handleRequest(String playlistId, int totalSongs) {
-        setTotalSongs(totalSongs);
-        continueParsing = true;
-        offset = 0;
-        currentTotalSongs = 0;
-
-        token = spotifyTokenRefresher.refreshToken();
-
-        int numThreads = 12;
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-
-        try {
-            List<Future<Void>> futures = new ArrayList<>();
-
-            runRequestThread(playlistId, numThreads, executorService, futures);
-
-            for (Future<Void> future : futures) {
-                future.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error while executing threads: " + e.getMessage());
-        } finally {
-            executorService.shutdown();
-        }
-
-        int difference = currentTotalSongs - totalSongs;
-        logger.info("Difference: " + difference);
-        logger.info("Current total songs: " + currentTotalSongs);
-        logger.info("Total songs: " + totalSongs);
-
-        setTotalSongs(currentTotalSongs);
-
-
-        if (difference < 1) {
-            return new ArrayList<>();
-        }
-
-        return allSongs.stream()
-                .sorted(Comparator.comparing(Song::getAddedAt).reversed())
-                .limit(difference)
-                .collect(Collectors.toList());
+//        setTotalSongs(totalSongs);
+//        continueParsing = true;
+//        offset = 0;
+//        currentTotalSongs = 0;
+//
+//        token = spotifyTokenRefresher.refreshToken();
+//
+//        int numThreads = 12;
+//        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+//
+//        try {
+//            List<Future<Void>> futures = new ArrayList<>();
+//
+//            runRequestThread(playlistId, numThreads, executorService, futures);
+//
+//            for (Future<Void> future : futures) {
+//                future.get();
+//            }
+//        } catch (InterruptedException | ExecutionException e) {
+//            logger.error("Error while executing threads: " + e.getMessage());
+//        } finally {
+//            executorService.shutdown();
+//        }
+//
+//        int difference = currentTotalSongs - totalSongs;
+//        logger.info("Difference: " + difference);
+//        logger.info("Current total songs: " + currentTotalSongs);
+//        logger.info("Total songs: " + totalSongs);
+//
+//        setTotalSongs(currentTotalSongs);
+//
+//
+//        if (difference < 1) {
+//            return new ArrayList<>();
+//        }
+//
+//        return allSongs.stream()
+//                .sorted(Comparator.comparing(Song::getAddedAt).reversed())
+//                .limit(difference)
+//                .collect(Collectors.toList());
+        List<Song> result = new ArrayList<>();
+        List<String> artists = new ArrayList<>();
+        artists.add("Falling In Reverse");
+        result.add(new Song("Carry On", artists, "2020-07-27T07:04:10Z", "https://open.spotify.com/track/3GSMJpuz3rFU8WtCws1rv5?si=1550e29ce1324d32"));
+        return result;
     }
 
     private void runRequestThread(String playlistId, int numThreads, ExecutorService executorService, List<Future<Void>> futures) {
