@@ -22,7 +22,7 @@ public class SpotifyTokenRefresher {
     @Value("${SPOTIFY_CLIENT_SECRET}")
     public String CLIENT_SECRET;
     @Value("${SPOTIFY_REFRESH_TOKEN}")
-    public final String REFRESH_TOKEN = "AQCzcc_9PTsTTNPLxvdXbfT_d6tZXqSc6BzITfQuFRLOlQEt7IZx-I7FmAC-qAZFnlMjW0Wg-EvpAlPvw-WxfhT-SqVHgWRLnRVxkCpbPtuz6osR8Tcza0FU7MOI_9hqtpk";
+    public String REFRESH_TOKEN;
 
     public String refreshToken() {
 
