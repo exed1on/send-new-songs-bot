@@ -147,7 +147,7 @@ public class SpotifyService {
             String authOptionsUrl = SPOTIFY_PLAYLIST_URL + playlistId
                     + "/tracks?fields=items%28added_at,track%28name,artists,external_urls%29%29&limit="
                     + LIMIT + "&offset=" + currentOffset;
-            logger.info("Sending request to spotify api");
+            logger.info("Sending request to spotify api " + authOptionsUrl);
 
             continueParsing = sendRequestGetPlaylistItems(authOptionsUrl, token);
         }
