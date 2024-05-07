@@ -133,6 +133,7 @@ public class SpotifyService {
         return true;
     }
 
+
     public List<Song> handleRequest(String playlistId, int totalSongs) {
         setTotalSongs(totalSongs);
         continueParsing = true;
@@ -141,21 +142,14 @@ public class SpotifyService {
 
         token = spotifyTokenRefresher.refreshToken();
 
-        int numThreads = 12;
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        while (continueParsing) {
+            int currentOffset = getNextOffset();
+            String authOptionsUrl = SPOTIFY_PLAYLIST_URL + playlistId
+                    + "/tracks?fields=items%28added_at,track%28name,artists,external_urls%29%29&limit="
+                    + LIMIT + "&offset=" + currentOffset;
+            logger.info("Sending request to spotify api");
 
-        try {
-            List<Future<Void>> futures = new ArrayList<>();
-
-            runRequestThread(playlistId, numThreads, executorService, futures);
-
-            for (Future<Void> future : futures) {
-                future.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error while executing threads: " + e.getMessage());
-        } finally {
-            executorService.shutdown();
+            continueParsing = sendRequestGetPlaylistItems(authOptionsUrl, token);
         }
 
         int difference = currentTotalSongs - totalSongs;
@@ -174,22 +168,5 @@ public class SpotifyService {
                 .sorted(Comparator.comparing(Song::getAddedAt).reversed())
                 .limit(difference)
                 .collect(Collectors.toList());
-    }
-
-    private void runRequestThread(String playlistId, int numThreads, ExecutorService executorService, List<Future<Void>> futures) {
-        for (int i = 0; i < numThreads; i++) {
-            futures.add(executorService.submit(() -> {
-                while (continueParsing) {
-                    int currentOffset = getNextOffset();
-                    String authOptionsUrl = SPOTIFY_PLAYLIST_URL + playlistId
-                            + "/tracks?fields=items%28added_at,track%28name,artists,external_urls%29%29&limit="
-                            + LIMIT + "&offset=" + currentOffset;
-
-                    continueParsing = sendRequestGetPlaylistItems(authOptionsUrl, token);
-                }
-
-                return null;
-            }));
-        }
     }
 }

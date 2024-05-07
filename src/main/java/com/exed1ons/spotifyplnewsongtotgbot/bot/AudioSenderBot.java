@@ -14,6 +14,8 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Component
@@ -60,7 +62,7 @@ public class AudioSenderBot extends TelegramLongPollingBot {
 
                 var playlistId = extractPlaylistId(playlistUrl);
                 playlistToSendService.savePlaylistToSend(playlistId, chatId, count);
-            } else if (text != null && text.startsWith("/delete")) {
+            } else if (text != null && text.startsWith("/remove")) {
                 String[] parts = text.split(" ");
                 if (parts.length < 2) {
                     sendMessage(chatId, "Invalid command format");
@@ -69,9 +71,22 @@ public class AudioSenderBot extends TelegramLongPollingBot {
                 String playlistUrl = parts[1];
 
                 var playlistId = extractPlaylistId(playlistUrl);
+                logger.info("Deleting playlist with ID: " + playlistId);
                 playlistToSendService.deletePlaylistToSend(playlistId, chatId);
             }
+            else if (text != null && text.equals("/get_subscriptions")) {
+                List<String> subscriptions = playlistToSendService.getSubscriptionsForChat(chatId);
+                StringBuilder response = new StringBuilder("Subscriptions for this chat:\n");
+                for (String subscription : subscriptions) {
+                    response.append(subscription).append("\n");
+                }
+                sendMessage(chatId, response.toString());
+            }
         }
+    }
+
+    public List<String> getSubscriptions(String chatId) {
+        return playlistToSendService.getSubscriptionsForChat(chatId);
     }
 
     private String extractPlaylistId(String spotifyLink) {

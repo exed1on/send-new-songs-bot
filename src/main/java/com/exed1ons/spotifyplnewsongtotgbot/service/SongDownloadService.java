@@ -1,5 +1,7 @@
 package com.exed1ons.spotifyplnewsongtotgbot.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,11 +13,20 @@ import java.io.InputStreamReader;
 @Service
 public class SongDownloadService {
 
+    private static final Logger logger = LoggerFactory.getLogger(NewSongService.class);
+
+
     @Value("${download.directory}")
     private String downloadDirectory;
 
     public void downloadSong(String url) {
         try {
+            File directory = new File(downloadDirectory);
+            if (!directory.exists()) {
+                directory.mkdirs();
+                logger.info("Download directory created: " + downloadDirectory);
+            }
+
             String[] command = {"spotdl", "--audio", "youtube", "--lyrics", "genius", "--output", "{title}", url};
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);

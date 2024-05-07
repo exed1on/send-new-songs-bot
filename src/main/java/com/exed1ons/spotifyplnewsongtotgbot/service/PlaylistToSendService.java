@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PlaylistToSendService {
@@ -20,13 +22,19 @@ public class PlaylistToSendService {
     }
 
     public void savePlaylistToSend(String playlistId, String chatId, int count) {
-        var playlistToSend = PlaylistToSend.builder()
-                .playlistId(playlistId)
-                .chatId(chatId)
-                .count(count)
-                .build();
-
-        playlistToSendRepository.save(playlistToSend);
+        Optional<PlaylistToSend> existingPlaylist = playlistToSendRepository.findByPlaylistIdAndChatId(playlistId, chatId);
+        if (existingPlaylist.isPresent()) {
+            PlaylistToSend playlistToUpdate = existingPlaylist.get();
+            playlistToUpdate.setCount(count);
+            playlistToSendRepository.save(playlistToUpdate);
+        } else {
+            PlaylistToSend playlistToSend = PlaylistToSend.builder()
+                    .playlistId(playlistId)
+                    .chatId(chatId)
+                    .count(count)
+                    .build();
+            playlistToSendRepository.save(playlistToSend);
+        }
     }
 
     public List<PlaylistToSend> getAllPlaylistsToSend() {
@@ -41,12 +49,21 @@ public class PlaylistToSendService {
     }
 
     public void deletePlaylistToSend(String playlistId, String chatId) {
-        var playlist = playlistToSendRepository.findByPlaylistIdAndChatId(playlistId, chatId);
+        Optional<PlaylistToSend> playlist = playlistToSendRepository.findByPlaylistIdAndChatId(playlistId, chatId);
         if (playlist.isPresent()) {
             playlistToSendRepository.delete(playlist.get());
             logger.info("Playlist with ID {} and chat ID {} deleted successfully.", playlistId, chatId);
         } else {
             logger.warn("Playlist with ID {} and chat ID {} not found for deletion.", playlistId, chatId);
         }
+    }
+
+    public List<String> getSubscriptionsForChat(String chatId) {
+        List<String> subscriptions = new ArrayList<>();
+        List<PlaylistToSend> playlists = playlistToSendRepository.findByChatId(chatId);
+        for (PlaylistToSend playlist : playlists) {
+            subscriptions.add(playlist.getPlaylistId());
+        }
+        return subscriptions;
     }
 }
