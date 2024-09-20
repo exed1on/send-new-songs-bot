@@ -27,7 +27,7 @@ public class SongDownloadService {
                 logger.info("Download directory created: " + downloadDirectory);
             }
 
-            String[] command = {"spotdl", "--audio", "youtube", "--lyrics", "genius", "--output", "{title}", url};
+            String[] command = {"spotdl", "--audio", "soundcloud", "slider-kz", "--lyrics", "genius", "--output", "{title}", url};
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
             processBuilder.directory(new File(downloadDirectory));
